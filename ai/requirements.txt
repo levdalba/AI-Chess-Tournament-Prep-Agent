@@ -1,0 +1,6 @@
+# AI Service Dependencies
+aiohttp>=3.9.0
+openai>=1.0.0  # For compatibility with OpenAI-style API
+pydantic>=2.5.0
+python-dotenv>=1.0.0
+tenacity>=8.2.0  # For retry logic

@@ -16,56 +16,68 @@ import { Layout } from './components/Layout'
 
 // Create a client
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+    defaultOptions: {
+        queries: {
+            retry: 1,
+            refetchOnWindowFocus: false,
+            staleTime: 5 * 60 * 1000, // 5 minutes
+        },
+        mutations: {
+            retry: false,
+        },
     },
-    mutations: {
-      retry: false,
-    },
-  },
 })
 
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            
-            {/* Protected routes */}
-            <Route path="/dashboard" element={
-              <Layout>
-                <DashboardPage />
-              </Layout>
-            } />
-            <Route path="/analysis" element={
-              <Layout>
-                <AnalysisPage />
-              </Layout>
-            } />
-            <Route path="/prep-plans" element={
-              <Layout>
-                <PrepPlanPage />
-              </Layout>
-            } />
-            <Route path="/drills" element={
-              <Layout>
-                <DrillsPage />
-              </Layout>
-            } />
-          </Routes>
-        </div>
-      </Router>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  )
+    return (
+        <QueryClientProvider client={queryClient}>
+            <Router>
+                <div className="min-h-screen bg-gray-50">
+                    <Routes>
+                        {/* Public routes */}
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+
+                        {/* Protected routes */}
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <Layout>
+                                    <DashboardPage />
+                                </Layout>
+                            }
+                        />
+                        <Route
+                            path="/analysis"
+                            element={
+                                <Layout>
+                                    <AnalysisPage />
+                                </Layout>
+                            }
+                        />
+                        <Route
+                            path="/prep-plans"
+                            element={
+                                <Layout>
+                                    <PrepPlanPage />
+                                </Layout>
+                            }
+                        />
+                        <Route
+                            path="/drills"
+                            element={
+                                <Layout>
+                                    <DrillsPage />
+                                </Layout>
+                            }
+                        />
+                    </Routes>
+                </div>
+            </Router>
+            <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+    )
 }
 
 export default App

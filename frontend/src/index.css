@@ -8,36 +8,11 @@
   }
 
   body {
-    @apply h-full bg-gray-50 font-chess;
+    @apply h-full bg-gray-50;
+    font-family: Inter, system-ui, sans-serif;
   }
 
   #root {
     @apply h-full;
-  }
-}
-
-@layer components {
-  .btn-primary {
-    @apply px-4 py-2 bg-chess-primary text-white rounded-lg hover:bg-chess-primary/90 transition-colors duration-200 font-medium;
-  }
-
-  .btn-secondary {
-    @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium;
-  }
-
-  .card {
-    @apply bg-white rounded-lg shadow-md p-6 border border-gray-200;
-  }
-
-  .form-input {
-    @apply block w-full rounded-lg border-gray-300 shadow-sm focus:border-chess-primary focus:ring focus:ring-chess-primary/20 transition-colors duration-200;
-  }
-
-  .chess-board-light {
-    @apply bg-chess-light;
-  }
-
-  .chess-board-dark {
-    @apply bg-chess-dark;
   }
 }
