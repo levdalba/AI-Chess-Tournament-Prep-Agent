@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
+from contextlib import asynccontextmanager
 import logging
 from datetime import datetime
 import os
@@ -54,6 +55,69 @@ chess_fetcher: Optional[ChessDataFetcher] = None
 chess_analyzer: Optional[ChessAnalyzer] = None
 opening_analyzer: Optional[OpeningAnalyzer] = None
 grok_service: Optional[GrokAIService] = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan events."""
+    # Startup
+    global chess_fetcher, chess_analyzer, opening_analyzer, grok_service
+    
+    try:
+        # Initialize data fetcher
+        chess_fetcher = ChessDataFetcher()
+        
+        # Initialize analyzers (only if dependencies are available)
+        try:
+            chess_analyzer = ChessAnalyzer(
+                stockfish_path=STOCKFISH_PATH if STOCKFISH_PATH else None
+            )
+        except Exception as e:
+            logger.warning(f"Chess analyzer not available: {e}")
+            chess_analyzer = None
+        
+        opening_analyzer = OpeningAnalyzer()
+        
+        # Initialize AI service (only if API key is available)
+        if GROK_API_KEY:
+            grok_service = GrokAIService(GROK_API_KEY)
+        else:
+            logger.warning("GROK_API_KEY not found, AI features will be limited")
+            grok_service = None
+        
+        logger.info("Services initialized successfully")
+    
+    except Exception as e:
+        logger.error(f"Error initializing services: {e}")
+    
+    yield
+    
+    # Shutdown
+    try:
+        if chess_fetcher:
+            await chess_fetcher.close()
+        
+        if chess_analyzer:
+            # Chess analyzer doesn't need async cleanup
+            pass
+        
+        if grok_service:
+            # Grok service cleanup handled by context manager
+            pass
+        
+        logger.info("Services cleaned up successfully")
+    
+    except Exception as e:
+        logger.error(f"Error during cleanup: {e}")
+
+
+# Initialize FastAPI app with lifespan
+app = FastAPI(
+    title="AI Chess Tournament Prep Agent",
+    description="Backend API for chess tournament preparation with AI-powered analysis",
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 
 # Request/Response Models
@@ -108,61 +172,11 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     return {"id": "user123", "username": "testuser"}
 
 
-# Startup and shutdown events
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services on startup."""
-    global chess_fetcher, chess_analyzer, opening_analyzer, grok_service
-    
-    try:
-        # Initialize data fetcher
-        chess_fetcher = ChessDataFetcher()
-        
-        # Initialize analyzers (only if dependencies are available)
-        try:
-            chess_analyzer = ChessAnalyzer(
-                stockfish_path=STOCKFISH_PATH if STOCKFISH_PATH else None
-            )
-        except Exception as e:
-            logger.warning(f"Chess analyzer not available: {e}")
-            chess_analyzer = None
-        
-        opening_analyzer = OpeningAnalyzer()
-        
-        # Initialize AI service (only if API key is available)
-        if GROK_API_KEY:
-            grok_service = GrokAIService(GROK_API_KEY)
-        else:
-            logger.warning("GROK_API_KEY not found, AI features will be limited")
-            grok_service = None
-        
-        logger.info("Services initialized successfully")
-    
-    except Exception as e:
-        logger.error(f"Error initializing services: {e}")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown."""
-    global chess_fetcher, chess_analyzer, grok_service
-    
-    try:
-        if chess_fetcher:
-            await chess_fetcher.close()
-        
-        if chess_analyzer:
-            # Chess analyzer doesn't need async cleanup
-            pass
-        
-        if grok_service:
-            # Grok service cleanup handled by context manager
-            pass
-        
-        logger.info("Services cleaned up successfully")
-    
-    except Exception as e:
-        logger.error(f"Error during cleanup: {e}")
+# Dependency to get current user (mock for now)
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    # In a real app, verify the JWT token here
+    # For now, return a mock user
+    return {"id": "user123", "username": "testuser"}
 
 
 # Health check endpoint
