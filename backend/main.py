@@ -18,6 +18,9 @@ import sys
 from middleware import ErrorHandlerMiddleware, LoggingMiddleware
 from middleware.error_handler import http_exception_handler, validation_exception_handler
 
+# Import configuration
+from config import setup_logging, get_logger
+
 # Add project root to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -28,8 +31,10 @@ from data.analyzers.chess_engine import ChessAnalyzer, GameAnalysis
 from data.analyzers.opening_analyzer import OpeningAnalyzer, OpeningRepertoire
 from ai.grok_service import GrokAIService, PrepPlan
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Setup logging
+log_level = os.getenv("LOG_LEVEL", "INFO")
+setup_logging(log_level)
+logger = get_logger(__name__)
 logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
