@@ -15,33 +15,17 @@ import os
 import sys
 
 # Import middleware
-from backend.middleware import ErrorHandlerMiddleware, LoggingMiddleware
-from backend.middleware.error_handler import (
+from middleware import ErrorHandlerMiddleware, LoggingMiddleware
+from middleware.error_handler import (
     http_exception_handler,
     validation_exception_handler,
 )
 
 # Import configuration
-from backend.config import setup_logging, get_logger, db_manager, init_database
+from config import setup_logging, get_logger, db_manager, init_database
 
 # Add project root to path for imports
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
-
-# Import our modules
-from shared.models import Game, Player, PrepPlan as SharedPrepPlan
-from data.fetchers import ChessDataFetcher
-from data.analyzers.chess_engine import ChessAnalyzer, GameAnalysis
-from data.analyzers.opening_analyzer import OpeningAnalyzer, OpeningRepertoire
-from ai.grok_service import GrokAIService, PrepPlan
-import logging
-from datetime import datetime
-import os
-import sys
-
-# Add project root to path for imports
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import our modules
 from shared.models import Game, Player, PrepPlan as SharedPrepPlan

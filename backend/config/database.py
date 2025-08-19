@@ -104,7 +104,7 @@ async def init_database():
     """Initialize database tables."""
     try:
         # Import models to ensure they're registered
-        from backend.database.models import Base
+        from database.models import Base
 
         # Create all tables
         async with db_manager.engine.begin() as conn:
