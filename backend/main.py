@@ -204,15 +204,24 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
+    # Check database health
+    db_healthy = await db_manager.health_check()
+    
+    services_status = {
+        "database": db_healthy,
+        "chess_fetcher": chess_fetcher is not None,
+        "chess_analyzer": chess_analyzer is not None,
+        "opening_analyzer": opening_analyzer is not None,
+        "grok_service": grok_service is not None
+    }
+    
+    # Overall health status
+    overall_healthy = db_healthy and chess_fetcher is not None
+    
     return {
-        "status": "healthy",
+        "status": "healthy" if overall_healthy else "degraded",
         "timestamp": datetime.now().isoformat(),
-        "services": {
-            "chess_fetcher": chess_fetcher is not None,
-            "chess_analyzer": chess_analyzer is not None,
-            "opening_analyzer": opening_analyzer is not None,
-            "grok_service": grok_service is not None
-        }
+        "services": services_status
     }
 
 
