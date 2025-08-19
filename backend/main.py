@@ -19,7 +19,7 @@ from middleware import ErrorHandlerMiddleware, LoggingMiddleware
 from middleware.error_handler import http_exception_handler, validation_exception_handler
 
 # Import configuration
-from config import setup_logging, get_logger
+from config import setup_logging, get_logger, db_manager, init_database
 
 # Add project root to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -82,6 +82,14 @@ async def lifespan(app: FastAPI):
     global chess_fetcher, chess_analyzer, opening_analyzer, grok_service
     
     try:
+        # Initialize database
+        database_url = os.getenv("DATABASE_URL")
+        debug_mode = os.getenv("DEBUG", "0") == "1"
+        db_manager.initialize(database_url, echo=debug_mode)
+        
+        # Initialize database tables
+        await init_database()
+        
         # Initialize data fetcher
         chess_fetcher = ChessDataFetcher()
         
@@ -115,13 +123,8 @@ async def lifespan(app: FastAPI):
         if chess_fetcher:
             await chess_fetcher.close()
         
-        if chess_analyzer:
-            # Chess analyzer doesn't need async cleanup
-            pass
-        
-        if grok_service:
-            # Grok service cleanup handled by context manager
-            pass
+        # Close database connections
+        await db_manager.close()
         
         logger.info("Services cleaned up successfully")
     
