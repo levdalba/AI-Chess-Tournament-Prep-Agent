@@ -17,19 +17,19 @@ logger = logging.getLogger(__name__)
 
 class DatabaseManager:
     """Manages database connections and sessions."""
-    
+
     def __init__(self):
         self.engine: AsyncEngine = None
         self.session_factory: sessionmaker = None
-        
+
     def initialize(self, database_url: str = None, echo: bool = False):
         """Initialize the database connection."""
         if not database_url:
             database_url = os.getenv(
-                "DATABASE_URL", 
-                "sqlite+aiosqlite:///./chess_prep.db"  # Fallback to SQLite
+                "DATABASE_URL",
+                "sqlite+aiosqlite:///./chess_prep.db",  # Fallback to SQLite
             )
-        
+
         # Create async engine
         if "sqlite" in database_url:
             # SQLite-specific configuration
@@ -37,7 +37,7 @@ class DatabaseManager:
                 database_url,
                 echo=echo,
                 poolclass=StaticPool,
-                connect_args={"check_same_thread": False}
+                connect_args={"check_same_thread": False},
             )
         else:
             # PostgreSQL configuration
@@ -47,24 +47,22 @@ class DatabaseManager:
                 pool_size=20,
                 max_overflow=0,
                 pool_pre_ping=True,
-                pool_recycle=300
+                pool_recycle=300,
             )
-        
+
         # Create session factory
         self.session_factory = sessionmaker(
-            self.engine,
-            class_=AsyncSession,
-            expire_on_commit=False
+            self.engine, class_=AsyncSession, expire_on_commit=False
         )
-        
+
         logger.info(f"Database initialized: {database_url}")
-    
+
     @asynccontextmanager
     async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
         """Get a database session."""
         if not self.session_factory:
             raise RuntimeError("Database not initialized")
-        
+
         async with self.session_factory() as session:
             try:
                 yield session
@@ -74,13 +72,13 @@ class DatabaseManager:
                 raise
             finally:
                 await session.close()
-    
+
     async def close(self):
         """Close database connections."""
         if self.engine:
             await self.engine.dispose()
             logger.info("Database connections closed")
-    
+
     async def health_check(self) -> bool:
         """Check database health."""
         try:
@@ -106,12 +104,12 @@ async def init_database():
     """Initialize database tables."""
     try:
         # Import models to ensure they're registered
-        from database.models import Base
-        
+        from backend.database.models import Base
+
         # Create all tables
         async with db_manager.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-        
+
         logger.info("Database tables initialized")
     except Exception as e:
         logger.error(f"Error initializing database tables: {e}")

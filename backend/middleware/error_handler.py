@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class ErrorHandlerMiddleware(BaseHTTPMiddleware):
     """Middleware to handle errors globally."""
-    
+
     async def dispatch(self, request: Request, call_next):
         try:
             response = await call_next(request)
@@ -26,15 +26,15 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
             # Log the error
             logger.error(f"Unhandled error in {request.method} {request.url}: {exc}")
             logger.error(traceback.format_exc())
-            
+
             # Return a generic error response
             return JSONResponse(
                 status_code=500,
                 content={
                     "error": "Internal server error",
                     "message": "An unexpected error occurred. Please try again later.",
-                    "path": str(request.url.path)
-                }
+                    "path": str(request.url.path),
+                },
             )
 
 
@@ -45,8 +45,8 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         content={
             "error": exc.detail,
             "status_code": exc.status_code,
-            "path": str(request.url.path)
-        }
+            "path": str(request.url.path),
+        },
     )
 
 
@@ -56,7 +56,7 @@ async def validation_exception_handler(request: Request, exc):
         status_code=422,
         content={
             "error": "Validation error",
-            "details": exc.errors() if hasattr(exc, 'errors') else str(exc),
-            "path": str(request.url.path)
-        }
+            "details": exc.errors() if hasattr(exc, "errors") else str(exc),
+            "path": str(request.url.path),
+        },
     )
